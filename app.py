@@ -1,7 +1,8 @@
-from textblob import TextBlob
 from flask import Flask, render_template, request, redirect, session
+from textblob import TextBlob
 import sqlite3
 from datetime import date
+import os
 
 app = Flask(__name__)
 app.secret_key = "secret123"
@@ -106,30 +107,28 @@ def add_mood():
         return redirect("/login")
 
     if request.method == "POST":
-        mood = request.form.get("mood")
+        mood = int(request.form.get("mood"))
         note = request.form.get("note")
         today = date.today().isoformat()
-        
-        
-     # SENTIMENT ANALYSIS
-    sentiment = TextBlob(note).sentiment.polarity
 
-    if sentiment > 0:
-        detected_mood = "Positive 😊"
-    elif sentiment < 0:
-        detected_mood = "Negative 😢"
-    else:
-        detected_mood = "Neutral 😐"   
-    
+        # SENTIMENT ANALYSIS
+        sentiment = TextBlob(note).sentiment.polarity
 
+        if sentiment > 0:
+            detected_mood = "Positive 😊"
+        elif sentiment < 0:
+            detected_mood = "Negative 😢"
+        else:
+            detected_mood = "Neutral 😐"
 
         conn = sqlite3.connect("mood_journal.db")
         cursor = conn.cursor()
 
         cursor.execute(
-    "INSERT INTO mood_entries (user_id, mood, note, sentiment, date) VALUES (?, ?, ?, ?, ?)",
-    (session["user_id"], mood, note, detected_mood, today)
-)
+            "INSERT INTO mood_entries (user_id, mood, note, sentiment, date) VALUES (?, ?, ?, ?, ?)",
+            (session["user_id"], mood, note, detected_mood, today)
+        )
+
         conn.commit()
         conn.close()
 
@@ -190,4 +189,4 @@ def logout():
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
