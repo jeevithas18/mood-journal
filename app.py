@@ -8,10 +8,10 @@ app = Flask(__name__)
 app.secret_key = "secret123"
 
 
-# ---------------- HOME ----------------
+# ---------------- HOME ----------------)
 @app.route("/")
 def home():
-    return "Mental Health Mood Journal is running 💙"
+    return redirect("/login")
 
 
 # ---------------- REGISTER ----------------
